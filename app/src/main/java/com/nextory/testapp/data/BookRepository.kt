@@ -3,7 +3,9 @@ package com.nextory.testapp.data
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class BookRepository @Inject constructor(
@@ -14,4 +16,9 @@ class BookRepository @Inject constructor(
             bookDao.observePagedBooks()
         }.flow
     }
+
+    suspend fun getBook(id: Long): Book =
+        withContext(Dispatchers.IO) {
+            bookDao.getBook(id)
+        }
 }

@@ -33,14 +33,16 @@ import com.nextory.testapp.ui.utils.rememberFlowWithLifecycle
 
 @Composable
 fun BookList(
-    bookListViewModel: BookListViewModel = hiltViewModel()
+    bookListViewModel: BookListViewModel = hiltViewModel(),
+    onBookClicked: (Long) -> Unit
 ) {
     val pagedBooks = rememberFlowWithLifecycle(bookListViewModel.pagedBooks)
         .collectAsLazyPagingItems()
     BookList(
         pagedBooks = pagedBooks,
         onSearchTextChanged = {
-        }
+        },
+         onBookClicked = onBookClicked
     )
 }
 
@@ -52,7 +54,8 @@ fun BookList(
 @Composable
 private fun BookList(
     pagedBooks: LazyPagingItems<Book>,
-    onSearchTextChanged: (String) -> Unit = {}
+    onSearchTextChanged: (String) -> Unit = {},
+    onBookClicked: (Long) -> Unit
 ) {
     Scaffold(topBar = { BookListTopBar() }) { paddingValues ->
         LazyColumn(
@@ -98,7 +101,7 @@ private fun BookList(
             }
 
             items(pagedBooks) { book ->
-                BookItem(book = book!!)
+                BookItem(book = book!!, onClicked = onBookClicked)
             }
         }
     }
@@ -117,9 +120,12 @@ private fun BookListTopBar() {
 }
 
 @Composable
-private fun BookItem(book: Book) {
+private fun BookItem(
+    book: Book,
+    onClicked: (Long) -> Unit
+) {
     ListItem(
-        modifier = Modifier.clickable { },
+        modifier = Modifier.clickable { onClicked(book.id) },
         icon = {
             AsyncImage(
                 model = book.imageUrl,
