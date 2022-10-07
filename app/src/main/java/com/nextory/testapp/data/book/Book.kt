@@ -1,4 +1,4 @@
-package com.nextory.testapp.data
+package com.nextory.testapp.data.book
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

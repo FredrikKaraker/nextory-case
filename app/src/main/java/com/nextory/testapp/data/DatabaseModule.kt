@@ -28,4 +28,7 @@ object DatabaseModule {
 
     @Provides
     fun provideBookDao(database: AppDatabase) = database.bookDao()
+
+    @Provides
+    fun provideFavouriteDao(database: AppDatabase) = database.favouriteDao()
 }

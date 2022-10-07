@@ -6,18 +6,23 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.nextory.testapp.data.Book
+import com.nextory.testapp.R
+import com.nextory.testapp.data.book.Book
 import com.nextory.testapp.ui.theme.TestAppTheme
 import com.nextory.testapp.ui.utils.rememberStateWithLifecycle
 
@@ -27,20 +32,29 @@ fun BookDetails(
     viewModel: BookDetailsViewModel = hiltViewModel()
 ) {
     val viewState by rememberStateWithLifecycle(viewModel.viewState)
-    BookDetails(viewState = viewState, onBackClicked = onBackClicked)
+    BookDetails(
+        viewState = viewState,
+        onBackClicked = onBackClicked,
+        setFavourite = viewModel::setFavourite
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BookDetails(
     viewState: BookDetailsViewState,
-    onBackClicked: () -> Unit
+    onBackClicked: () -> Unit,
+    setFavourite: (Long, Boolean) -> Unit
 ) {
-    val title = (viewState as? BookDetailsViewState.Data)?.book?.title ?: ""
+    val successState = (viewState as? BookDetailsViewState.Success)
+    val title = successState?.book?.title ?: ""
+    val isFavourite = successState?.isFavourite == true
+    val bookId = successState?.book?.id
     Scaffold(
         topBar = {
             SmallTopAppBar(
                 modifier = Modifier.statusBarsPadding(),
+                colors = TopAppBarDefaults.smallTopAppBarColors(actionIconContentColor = Color.Unspecified),
                 title = {
                     Text(
                         text = title,
@@ -51,14 +65,33 @@ private fun BookDetails(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClicked) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(id = R.string.back_content_description)
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            bookId?.let { setFavourite(it, !isFavourite) }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (isFavourite) Icons.Filled.Star else Icons.Outlined.StarOutline,
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            contentDescription = stringResource(
+                                id = if (isFavourite) R.string.favourite_content_description
+                                else R.string.not_favourite_content_description
+                            )
+                        )
                     }
                 }
             )
         },
     ) {
         when (viewState) {
-            is BookDetailsViewState.Data -> Details(book = viewState.book)
+            is BookDetailsViewState.Success -> Details(book = viewState.book)
             BookDetailsViewState.Error -> Error()
             BookDetailsViewState.Loading -> Loading()
         }
@@ -107,7 +140,7 @@ private fun Loading() {
 fun BookDetailsPreview() {
     TestAppTheme {
         BookDetails(
-            BookDetailsViewState.Data(
+            BookDetailsViewState.Success(
                 Book(
                     id = 0,
                     title = "The Devil and the Dark Water",
@@ -118,9 +151,11 @@ fun BookDetailsPreview() {
                 But no sooner are they out to sea than devilry begins to blight the voyage. A twice-dead leper stalks the decks. Strange symbols appear on the sails. Livestock is slaughtered.
             """.trimIndent(),
                     imageUrl = ""
-                )
+                ),
+                isFavourite = false
             ),
-            onBackClicked = {}
+            onBackClicked = {},
+            setFavourite = { _, _ -> }
         )
     }
 }

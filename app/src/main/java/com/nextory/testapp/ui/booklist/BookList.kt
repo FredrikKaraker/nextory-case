@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -27,7 +28,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import coil.compose.AsyncImage
 import com.nextory.testapp.R
-import com.nextory.testapp.data.Book
 import com.nextory.testapp.ui.components.ListItem
 import com.nextory.testapp.ui.utils.rememberFlowWithLifecycle
 
@@ -39,10 +39,10 @@ fun BookList(
     val pagedBooks = rememberFlowWithLifecycle(bookListViewModel.pagedBooks)
         .collectAsLazyPagingItems()
     BookList(
-        pagedBooks = pagedBooks,
+        bookItems = pagedBooks,
         onSearchTextChanged = {
         },
-         onBookClicked = onBookClicked
+        onBookClicked = onBookClicked
     )
 }
 
@@ -53,7 +53,7 @@ fun BookList(
 )
 @Composable
 private fun BookList(
-    pagedBooks: LazyPagingItems<Book>,
+    bookItems: LazyPagingItems<BookItem>,
     onSearchTextChanged: (String) -> Unit = {},
     onBookClicked: (Long) -> Unit
 ) {
@@ -100,8 +100,8 @@ private fun BookList(
                 )
             }
 
-            items(pagedBooks) { book ->
-                BookItem(book = book!!, onClicked = onBookClicked)
+            items(bookItems) { bookItem ->
+                BookItem(bookItem = bookItem!!, onClicked = onBookClicked)
             }
         }
     }
@@ -121,9 +121,10 @@ private fun BookListTopBar() {
 
 @Composable
 private fun BookItem(
-    book: Book,
+    bookItem: BookItem,
     onClicked: (Long) -> Unit
 ) {
+    val book = bookItem.book
     ListItem(
         modifier = Modifier.clickable { onClicked(book.id) },
         icon = {
@@ -135,7 +136,15 @@ private fun BookItem(
                     .clip(RoundedCornerShape(8.dp))
             )
         },
-        secondaryText = { Text(book.author) }
+        secondaryText = { Text(book.author) },
+        trailing = {
+            if (bookItem.isFavourite) {
+                Icon(
+                    imageVector = Icons.Filled.Star,
+                    contentDescription = null
+                )
+            }
+        }
     ) {
         Text(book.title)
     }
