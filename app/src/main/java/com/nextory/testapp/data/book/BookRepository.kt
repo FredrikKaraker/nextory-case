@@ -11,9 +11,12 @@ import javax.inject.Inject
 class BookRepository @Inject constructor(
     private val bookDao: BookDao
 ) {
-    fun observePagedBooks(pagingConfig: PagingConfig): Flow<PagingData<Book>> {
+    fun observePagedBooks(
+        pagingConfig: PagingConfig,
+        searchQuery: String
+    ): Flow<PagingData<Book>> {
         return Pager(config = pagingConfig) {
-            bookDao.observePagedBooks()
+            bookDao.observePagedBooks("%${searchQuery.replace(" ", "%")}%")
         }.flow
     }
 
